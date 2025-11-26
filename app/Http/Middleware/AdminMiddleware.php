@@ -18,4 +18,3 @@ class AdminMiddleware
             ->with('error', 'You do not have admin access.');
     }
 }
-
