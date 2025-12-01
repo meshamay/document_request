@@ -3,22 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\DocumentRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class UserDocumentRequestController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     public function index()
     {
-        $user = Auth::user();
-        $requests = DocumentRequest::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // For demo purposes, show all requests (no authentication)
+        $requests = DocumentRequest::orderBy('created_at', 'desc')->get();
 
         $pendingCount = $requests->where('status', 'Pending')->count();
         $inProgressCount = $requests->where('status', 'In Progress')->count();
@@ -41,15 +34,25 @@ class UserDocumentRequestController extends Controller
             'purpose' => 'required|string',
         ]);
 
-        $user = Auth::user();
+        // For demo purposes, use first user or create a demo user
+        $user = User::first();
+        if (!$user) {
+            $user = User::create([
+                'name' => 'Demo User',
+                'email' => 'demo@example.com',
+                'password' => bcrypt('password'),
+                'role' => 'user',
+            ]);
+        }
+
         $documentType = 'Barangay Certificate';
 
         DocumentRequest::create([
             'transaction_id' => DocumentRequest::generateTransactionId($documentType),
             'user_id' => $user->id,
-            'last_name' => $user->name,
-            'first_name' => $user->name,
-            'middle_name' => $user->middle_name,
+            'last_name' => 'Demo',
+            'first_name' => 'User',
+            'middle_name' => null,
             'document_type' => $documentType,
             'purpose' => $validated['purpose'],
             'length_of_residency' => $validated['length_of_residency'],
